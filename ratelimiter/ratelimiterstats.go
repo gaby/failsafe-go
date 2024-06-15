@@ -56,6 +56,8 @@ func (s *smoothRateLimiterStats[R]) acquirePermits(requestedPermits int, maxWait
 }
 
 func (s *smoothRateLimiterStats[R]) reset() {
+	s.mtx.Lock()
+	defer s.mtx.Unlock()
 	s.stopwatch.Reset()
 	s.nextFreePermitTime = 0
 }
@@ -119,6 +121,8 @@ func (s *burstyRateLimiterStats[R]) acquirePermits(requestedPermits int, maxWait
 }
 
 func (s *burstyRateLimiterStats[R]) reset() {
+	s.mtx.Lock()
+	defer s.mtx.Unlock()
 	s.stopwatch.Reset()
 	s.availablePermits = s.config.periodPermits
 	s.currentPeriod = 0
@@ -126,8 +130,5 @@ func (s *burstyRateLimiterStats[R]) reset() {
 
 // exceedsMaxWaitTime returns whether the waitTime would exceed the maxWaitTime, else false if maxWaitTime is -1.
 func exceedsMaxWaitTime(waitTime time.Duration, maxWaitTime time.Duration) bool {
-	if maxWaitTime != -1 && waitTime > maxWaitTime {
-		return true
-	}
-	return false
+	return maxWaitTime != -1 && waitTime > maxWaitTime
 }

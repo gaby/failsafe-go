@@ -1,8 +1,26 @@
 ## Upcoming Release
 
+## 0.6.4
+
+### Bug Fixes
+
+- Improve bulkhead handling of short max wait times.
+
+## 0.6.3
+
+### Improvements
+
+- Optimized memory usage in time based circuit breakers.
+
+## 0.6.2
+
+### Improvements
+
+- New CachePolicy.
+
 ## 0.6.1
 
-## Improvements
+### Improvements
 
 - Better support for HedgePolicy and Timeout composition
 
