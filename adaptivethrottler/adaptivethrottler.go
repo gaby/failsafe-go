@@ -9,7 +9,6 @@ import (
 	"github.com/failsafe-go/failsafe-go"
 	"github.com/failsafe-go/failsafe-go/internal/util"
 	"github.com/failsafe-go/failsafe-go/policy"
-	"github.com/failsafe-go/failsafe-go/priority"
 )
 
 // ErrExceeded is returned when an execution exceeds the current limit.
@@ -66,13 +65,6 @@ type Builder[R any] interface {
 
 	// Build returns a new AdaptiveThrottler using the builder's configuration.
 	Build() AdaptiveThrottler[R]
-
-	// BuildPrioritized returns a new PrioritizedThrottler using the builder's configuration. This prioritized rejections of
-	// executions when throttling occurs. Rejections are performed using the Prioritizer, which sets a rejection threshold
-	// based on all the throttlers being used by the Prioritizer.
-	//
-	// Prioritized rejection is disabled by default, which means no executions will block when the limiter is full.
-	BuildPrioritized(prioritizer priority.Prioritizer) PriorityThrottler[R]
 }
 
 type config[R any] struct {
@@ -148,15 +140,6 @@ func (c *config[R]) Build() AdaptiveThrottler[R] {
 		config:         c,
 		ExecutionStats: util.NewTimedStats(20, c.thresholdingPeriod, util.NewClock()),
 	}
-}
-
-func (c *config[R]) BuildPrioritized(p priority.Prioritizer) PriorityThrottler[R] {
-	limiter := &priorityThrottler[R]{
-		adaptiveThrottler: c.Build().(*adaptiveThrottler[R]),
-		prioritizer:       p.(*priority.BasePrioritizer[*throttlerStats]),
-	}
-	limiter.prioritizer.Register(limiter.getThrottlerStats)
-	return limiter
 }
 
 type adaptiveThrottler[R any] struct {
